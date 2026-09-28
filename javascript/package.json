@@ -1,0 +1,21 @@
+{
+  "name": "sfsa",
+  "version": "0.1.0",
+  "description": "Standard Framework for Scientific Advancement — A Universal Computational Framework",
+  "main": "src/index.js",
+  "type": "module",
+  "scripts": {
+    "test": "node test/test_sfsa.js"
+  },
+  "keywords": [
+    "science",
+    "computational-physics",
+    "triada",
+    "mate",
+    "fln",
+    "scientific-framework",
+    "simulation"
+  ],
+  "author": "Alejo Malia",
+  "license": "CC-BY-4.0"
+}
