@@ -5,10 +5,6 @@
   <img src="docs/banner.png" alt="SFSA — Standard Framework for Scientific Advancement" width="100%">
 </p>
  
-> **Author & TRIADA Protocol Creator:** Alejo Malia  
-> **Version:** 0.1.0  
-> **License:** Creative Commons Attribution 4.0 International (CC BY 4.0)
-
 [![License: CC BY 4.0](https://img.shields.io/badge/License-CC_BY_4.0-lightgrey.svg)](https://creativecommons.org/licenses/by/4.0/)
 [![Tests](https://img.shields.io/badge/tests-passing%20(100%25)-brightgreen.svg)]()
 [![Python Tests](https://img.shields.io/badge/pytest-10%2F10%20passed-brightgreen.svg)]()
