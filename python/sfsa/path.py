@@ -68,6 +68,7 @@ class ParetoPathEngine:
 
     def __init__(self) -> None:
         self._actions: Dict[str, TransitionStep] = {}
+        self.max_expansions = 200_000
 
     def register_step(self, step: TransitionStep) -> None:
         """Registers an available transformation step."""
@@ -108,11 +109,25 @@ class ParetoPathEngine:
                     return False
             return True
 
-        # Breadth-first / branch-and-bound search
+        # Breadth-first / branch-and-bound search. Steps may repeat (e.g. heat, heat, heat); the search is
+        # bounded by dominance pruning per reached state and a hard cap on expansions.
         queue: List[Tuple[Dict[str, float], List[TransitionStep]]] = [(dict(initial_state), [])]
+        best_seen: Dict[Tuple[Tuple[str, float], ...], List[Tuple[float, float, float]]] = {}
+        expansions = 0
 
         while queue:
             curr_state, path = queue.pop(0)
+
+            obj = (
+                sum(s.cost for s in path),
+                sum(s.duration for s in path),
+                math.prod([s.feasibility for s in path]) if path else 1.0,
+            )
+            state_key = tuple(sorted((k, round(v, 9)) for k, v in curr_state.items()))
+            seen = best_seen.setdefault(state_key, [])
+            if any(c <= obj[0] and d <= obj[1] and f >= obj[2] for c, d, f in seen):
+                continue  # an equal-or-better way to reach this exact state was already explored
+            seen.append(obj)
 
             if is_goal_satisfied(curr_state):
                 total_cost = sum(s.cost for s in path)
@@ -136,9 +151,9 @@ class ParetoPathEngine:
                 continue
 
             for act in self._actions.values():
-                # Avoid trivial repeating identical action consecutively
-                if path and path[-1].step_id == act.step_id:
-                    continue
+                expansions += 1
+                if expansions > self.max_expansions:
+                    return self.extract_pareto_frontier(completed_pathways)
 
                 new_state = dict(curr_state)
                 for k, dv in act.delta_state.items():

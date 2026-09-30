@@ -68,13 +68,14 @@ class AutocompleteEngine:
     def detect_gaps(
         self,
         current_state: Dict[str, Any],
-        required_schema: Dict[str, Any],
+        required_schema: Optional[Dict[str, Any]] = None,
     ) -> List[Gap]:
         """
         Detects missing fields, null values, or unpopulated relations in the model state.
         """
         gaps: List[Gap] = []
-        for key, requirement in required_schema.items():
+        schema = required_schema or {}
+        for key, requirement in schema.items():
             if key not in current_state or current_state[key] is None:
                 gaps.append(
                     Gap(

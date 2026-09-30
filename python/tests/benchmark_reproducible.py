@@ -1,5 +1,5 @@
 """
-benchmark_reproducible.py — Reproducible Performance Benchmark for SFSA v0.1
+benchmark_reproducible.py — Reproducible Performance Benchmark for SFSA v0.2
 =============================================================================
 Runs an empirical, reproducible benchmark comparing a standard un-memoized
 iterative numerical solver against SFSA (TRIADA + MATE + ICR).
@@ -80,7 +80,7 @@ def run_benchmark(n_trials: int = 1000):
     ops_avoided_pct = (ops_avoided / baseline_ops) * 100.0 if baseline_ops > 0 else 0.0
 
     print("=" * 80)
-    print("SFSA v0.1 REPRODUCIBLE BENCHMARK RESULTS")
+    print("SFSA v0.2 REPRODUCIBLE BENCHMARK RESULTS")
     print("=" * 80)
     print(f"Sample Size (N)             : {n_trials} queries")
     print(f"Baseline Wall-Clock Time (tb): {t_baseline * 1000:.3f} ms")

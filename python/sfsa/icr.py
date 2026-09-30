@@ -16,6 +16,7 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from enum import Enum
 from typing import Any, Callable, Dict, List, Optional, Tuple
+import math
 import time
 
 
@@ -58,10 +59,12 @@ class ICREngine:
         shortcut_validity_condition: Optional[Callable[[Dict[str, Any]], bool]] = None,
         estimated_dense_ops: int = 1000,
         numerical_tolerance: float = 1e-6,
+        zero_input_result: Any = None,
     ) -> Tuple[Any, ReductionProfile]:
         """
         Executes a calculation applying In-Frame Computer Reduction passes:
-        1. Constant / Zero Input Pruning: If key inputs are 0 or below epsilon, return trivial solution in 1 op.
+        1. Trivial Zero Pruning: only when the caller declares the known answer for all-zero input
+           (`zero_input_result`). Without that declaration the solver always runs: f(0) is not 0 in general.
         2. Analytical Shortcut: If inputs satisfy the validity envelope, use closed-form analytical shortcut.
         3. Fallback to exact solver if shortcut conditions are not met.
         """
@@ -69,8 +72,9 @@ class ICREngine:
         t0 = time.perf_counter()
 
         # PASS 1: Trivial / Zero Input Pruning
+        estimated_dense_ops = max(int(estimated_dense_ops), 1)
         zero_keys = [k for k, v in input_params.items() if isinstance(v, (int, float)) and abs(v) < 1e-15]
-        if zero_keys and all(isinstance(v, (int, float)) and abs(v) < 1e-15 for v in input_params.values()):
+        if zero_input_result is not None and zero_keys and all(isinstance(v, (int, float)) and abs(v) < 1e-15 for v in input_params.values()):
             applied.append(f"TrivialZeroPruning: All inputs near zero ({zero_keys})")
             profile = ReductionProfile(
                 initial_operations_estimated=estimated_dense_ops,
@@ -82,7 +86,7 @@ class ICREngine:
             )
             self._total_operations_avoided += profile.operations_eliminated
             self._history.append(profile)
-            return 0.0, profile
+            return zero_input_result, profile
 
         # PASS 2: Analytical Closed-Form Substitution
         if self.level in [OptimizationLevel.O2_ANALYTICAL, OptimizationLevel.O3_AGGRESSIVE]:
@@ -93,8 +97,16 @@ class ICREngine:
                     else True
                 )
                 if can_use_shortcut:
+                    try:
+                        result = analytical_shortcut(input_params)
+                        shortcut_ok = not (isinstance(result, float) and not math.isfinite(result))
+                    except Exception:
+                        result, shortcut_ok = None, False
+                    if not shortcut_ok:
+                        applied.append("ShortcutRejected: closed form failed or returned non-finite; using exact solver")
+                        can_use_shortcut = False
+                if can_use_shortcut:
                     applied.append("ClosedFormSubstitution: Executed O(1) analytical shortcut")
-                    result = analytical_shortcut(input_params)
                     executed_ops = 5 # Constant ops for algebraic closed-form
                     profile = ReductionProfile(
                         initial_operations_estimated=estimated_dense_ops,
@@ -125,6 +137,10 @@ class ICREngine:
     @property
     def total_operations_avoided(self) -> int:
         return self._total_operations_avoided
+
+    @total_operations_avoided.setter
+    def total_operations_avoided(self, value: int) -> None:
+        self._total_operations_avoided = value
 
     @property
     def reduction_history(self) -> List[ReductionProfile]:

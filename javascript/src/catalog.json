@@ -1,0 +1,682 @@
+[
+  {
+    "skill_number": 1,
+    "name": "create_session",
+    "category": "Orchestration",
+    "description": "Creates an SFSA session with configuration",
+    "target_engine": "session",
+    "target_method": "self"
+  },
+  {
+    "skill_number": 2,
+    "name": "load_session",
+    "category": "Orchestration",
+    "description": "Loads a persisted session state",
+    "target_engine": "session",
+    "target_method": "load"
+  },
+  {
+    "skill_number": 3,
+    "name": "save_session",
+    "category": "Orchestration",
+    "description": "Persists current session state to disk",
+    "target_engine": "session",
+    "target_method": "save"
+  },
+  {
+    "skill_number": 4,
+    "name": "reset_session",
+    "category": "Orchestration",
+    "description": "Resets cache, history, or active layers",
+    "target_engine": "session",
+    "target_method": "reset"
+  },
+  {
+    "skill_number": 5,
+    "name": "get_session_status",
+    "category": "Orchestration",
+    "description": "Summarizes layers, cache, and engines",
+    "target_engine": "session",
+    "target_method": "generate_report"
+  },
+  {
+    "skill_number": 6,
+    "name": "set_budget",
+    "category": "Orchestration",
+    "description": "Defines wall-clock or evaluation budget",
+    "target_engine": "tbe",
+    "target_method": "set_budget"
+  },
+  {
+    "skill_number": 7,
+    "name": "set_policy",
+    "category": "Orchestration",
+    "description": "Configures global operational policies",
+    "target_engine": "session",
+    "target_method": "set_policy"
+  },
+  {
+    "skill_number": 8,
+    "name": "register_layer",
+    "category": "FLN",
+    "description": "Registers a layer with initial state",
+    "target_engine": "session",
+    "target_method": "register_layer"
+  },
+  {
+    "skill_number": 9,
+    "name": "update_layer",
+    "category": "FLN",
+    "description": "Updates state and propagates downstream deltas",
+    "target_engine": "session",
+    "target_method": "update_layer"
+  },
+  {
+    "skill_number": 10,
+    "name": "connect_layers",
+    "category": "FLN",
+    "description": "Connects two layers with a reactive transformer",
+    "target_engine": "session",
+    "target_method": "connect_layers"
+  },
+  {
+    "skill_number": 11,
+    "name": "disconnect_layers",
+    "category": "FLN",
+    "description": "Removes dependency edge from DAG",
+    "target_engine": "fln",
+    "target_method": "disconnect"
+  },
+  {
+    "skill_number": 12,
+    "name": "inspect_graph",
+    "category": "FLN",
+    "description": "Returns nodes, edges, and graph centrality",
+    "target_engine": "fln",
+    "target_method": "inspect_graph"
+  },
+  {
+    "skill_number": 13,
+    "name": "get_layer_state",
+    "category": "FLN",
+    "description": "Reads current parameter snapshot of a layer",
+    "target_engine": "fln",
+    "target_method": "get_layer"
+  },
+  {
+    "skill_number": 14,
+    "name": "propagate_delta",
+    "category": "FLN",
+    "description": "Forces targeted delta propagation",
+    "target_engine": "fln",
+    "target_method": "propagate"
+  },
+  {
+    "skill_number": 15,
+    "name": "find_affected_layers",
+    "category": "FLN",
+    "description": "Determines downstream affected reach",
+    "target_engine": "fln",
+    "target_method": "get_downstream"
+  },
+  {
+    "skill_number": 16,
+    "name": "inventory_check",
+    "category": "TRIADA",
+    "description": "T1: Validates existence and physical conservation",
+    "target_engine": "triada",
+    "target_method": "evaluate_inventory"
+  },
+  {
+    "skill_number": 17,
+    "name": "try_closed_form",
+    "category": "TRIADA",
+    "description": "T2: Attempts closed-form/analytical solution",
+    "target_engine": "triada",
+    "target_method": "try_closed_form"
+  },
+  {
+    "skill_number": 18,
+    "name": "bounded_verify",
+    "category": "TRIADA",
+    "description": "T3: Verifies solution against invariant laws",
+    "target_engine": "triada",
+    "target_method": "bounded_verify"
+  },
+  {
+    "skill_number": 19,
+    "name": "run_triada",
+    "category": "TRIADA",
+    "description": "Executes complete T1 -> T2 -> T3 protocol",
+    "target_engine": "session",
+    "target_method": "compute"
+  },
+  {
+    "skill_number": 20,
+    "name": "declare_invariants",
+    "category": "TRIADA",
+    "description": "Registers physical/mathematical invariants",
+    "target_engine": "triada",
+    "target_method": "register_invariants"
+  },
+  {
+    "skill_number": 21,
+    "name": "check_invariants",
+    "category": "TRIADA",
+    "description": "Evaluates state consistency against invariants",
+    "target_engine": "triada",
+    "target_method": "check_invariants"
+  },
+  {
+    "skill_number": 22,
+    "name": "compute",
+    "category": "MATE_ICR",
+    "description": "Executes computation with memoization & early-abort",
+    "target_engine": "session",
+    "target_method": "compute"
+  },
+  {
+    "skill_number": 23,
+    "name": "query_cache",
+    "category": "MATE_ICR",
+    "description": "Checks cache for exact or reusable solutions",
+    "target_engine": "mate",
+    "target_method": "lookup"
+  },
+  {
+    "skill_number": 24,
+    "name": "store_result",
+    "category": "MATE_ICR",
+    "description": "Stores result with provenance envelope",
+    "target_engine": "mate",
+    "target_method": "store"
+  },
+  {
+    "skill_number": 25,
+    "name": "invalidate_cache",
+    "category": "MATE_ICR",
+    "description": "Invalidates stale cache entries",
+    "target_engine": "mate",
+    "target_method": "invalidate"
+  },
+  {
+    "skill_number": 26,
+    "name": "project_trajectory",
+    "category": "MATE_ICR",
+    "description": "Projects future feasibility before heavy solve",
+    "target_engine": "mate",
+    "target_method": "project_trajectory"
+  },
+  {
+    "skill_number": 27,
+    "name": "early_abort_check",
+    "category": "MATE_ICR",
+    "description": "Short-circuits guaranteed infeasible calculations",
+    "target_engine": "mate",
+    "target_method": "project_trajectory"
+  },
+  {
+    "skill_number": 28,
+    "name": "reduce_expression",
+    "category": "MATE_ICR",
+    "description": "Applies in-frame constant folding & loop pruning",
+    "target_engine": "icr",
+    "target_method": "reduce"
+  },
+  {
+    "skill_number": 29,
+    "name": "estimate_compute_cost",
+    "category": "MATE_ICR",
+    "description": "Estimates wall-clock time and operations",
+    "target_engine": "icr",
+    "target_method": "estimate_cost"
+  },
+  {
+    "skill_number": 30,
+    "name": "check_consistency",
+    "category": "Projector_Pareto",
+    "description": "Evaluates parameter consistency across layers",
+    "target_engine": "projector",
+    "target_method": "project"
+  },
+  {
+    "skill_number": 31,
+    "name": "project_layers",
+    "category": "Projector_Pareto",
+    "description": "Computes coupling and vector distance",
+    "target_engine": "session",
+    "target_method": "project_layers"
+  },
+  {
+    "skill_number": 32,
+    "name": "register_transition_step",
+    "category": "Projector_Pareto",
+    "description": "Registers a multi-objective transition step",
+    "target_engine": "path",
+    "target_method": "register_step"
+  },
+  {
+    "skill_number": 33,
+    "name": "find_pareto_paths",
+    "category": "Projector_Pareto",
+    "description": "Computes Pareto-optimal transition pathways",
+    "target_engine": "session",
+    "target_method": "find_pareto_pathways"
+  },
+  {
+    "skill_number": 34,
+    "name": "rank_pathways",
+    "category": "Projector_Pareto",
+    "description": "Ranks pathways by cost, duration, or feasibility",
+    "target_engine": "path",
+    "target_method": "rank"
+  },
+  {
+    "skill_number": 35,
+    "name": "compare_states",
+    "category": "Projector_Pareto",
+    "description": "Computes state delta between two parameter sets",
+    "target_engine": "projector",
+    "target_method": "compare_states"
+  },
+  {
+    "skill_number": 36,
+    "name": "choose_fidelity",
+    "category": "Fidelity_Sampling",
+    "description": "Selects cheap vs intermediate vs high fidelity",
+    "target_engine": "amf",
+    "target_method": "evaluate"
+  },
+  {
+    "skill_number": 37,
+    "name": "compute_multi_fidelity",
+    "category": "Fidelity_Sampling",
+    "description": "Executes adaptive multi-fidelity evaluation",
+    "target_engine": "amf",
+    "target_method": "evaluate"
+  },
+  {
+    "skill_number": 38,
+    "name": "suggest_samples",
+    "category": "Fidelity_Sampling",
+    "description": "Suggests maximally informative sample points",
+    "target_engine": "asg",
+    "target_method": "evaluate_candidate"
+  },
+  {
+    "skill_number": 39,
+    "name": "run_adaptive_sampling",
+    "category": "Fidelity_Sampling",
+    "description": "Runs adaptive sampling campaign",
+    "target_engine": "asg",
+    "target_method": "run_campaign"
+  },
+  {
+    "skill_number": 40,
+    "name": "should_stop",
+    "category": "Fidelity_Sampling",
+    "description": "Evaluates uncertainty-aware early stopping",
+    "target_engine": "uas",
+    "target_method": "evaluate_step"
+  },
+  {
+    "skill_number": 41,
+    "name": "value_of_information",
+    "category": "Fidelity_Sampling",
+    "description": "Estimates value of further computation vs cost",
+    "target_engine": "uas",
+    "target_method": "value_of_information"
+  },
+  {
+    "skill_number": 42,
+    "name": "warm_start",
+    "category": "Fidelity_Sampling",
+    "description": "Initializes solver with approximate prior",
+    "target_engine": "cpe",
+    "target_method": "warm_start"
+  },
+  {
+    "skill_number": 43,
+    "name": "build_surrogate",
+    "category": "Fidelity_Sampling",
+    "description": "Constructs or updates local response surface",
+    "target_engine": "sme",
+    "target_method": "fit_from_history"
+  },
+  {
+    "skill_number": 44,
+    "name": "analyze_sensitivity",
+    "category": "Sensitivity_Constraints",
+    "description": "Quantifies parameter sensitivity indices",
+    "target_engine": "sra",
+    "target_method": "analyze_one_at_a_time"
+  },
+  {
+    "skill_number": 45,
+    "name": "reduce_dimensions",
+    "category": "Sensitivity_Constraints",
+    "description": "Projects problem into active subspace",
+    "target_engine": "sra",
+    "target_method": "reduce_parameter_space"
+  },
+  {
+    "skill_number": 46,
+    "name": "infer_constraints",
+    "category": "Sensitivity_Constraints",
+    "description": "Synthesizes implicit constraints from history",
+    "target_engine": "cae",
+    "target_method": "infer_constraints"
+  },
+  {
+    "skill_number": 47,
+    "name": "apply_constraints",
+    "category": "Sensitivity_Constraints",
+    "description": "Applies cuts and bounds prior to solver",
+    "target_engine": "cae",
+    "target_method": "validate_inputs"
+  },
+  {
+    "skill_number": 48,
+    "name": "extract_partial_knowledge",
+    "category": "Sensitivity_Constraints",
+    "description": "Extracts bounds/residuals from partial runs",
+    "target_engine": "pke",
+    "target_method": "get_latest"
+  },
+  {
+    "skill_number": 49,
+    "name": "reuse_approximate",
+    "category": "Sensitivity_Constraints",
+    "description": "Reuses near-neighbor solution within tolerance",
+    "target_engine": "cpe",
+    "target_method": "assess_reuse"
+  },
+  {
+    "skill_number": 50,
+    "name": "map_landscape",
+    "category": "Sensitivity_Constraints",
+    "description": "Probes topological structure of response surface",
+    "target_engine": "lse",
+    "target_method": "probe_region"
+  },
+  {
+    "skill_number": 51,
+    "name": "get_provenance",
+    "category": "Provenance_Cache",
+    "description": "Retrieves complete lineage for a result",
+    "target_engine": "cpe",
+    "target_method": "get_records"
+  },
+  {
+    "skill_number": 52,
+    "name": "assess_reuse",
+    "category": "Provenance_Cache",
+    "description": "Assesses exact vs approximate reuse validity",
+    "target_engine": "cpe",
+    "target_method": "assess_reuse"
+  },
+  {
+    "skill_number": 53,
+    "name": "forget_results",
+    "category": "Provenance_Cache",
+    "description": "Evicts low-retention cache entries",
+    "target_engine": "rfe",
+    "target_method": "evict"
+  },
+  {
+    "skill_number": 54,
+    "name": "version_model",
+    "category": "Provenance_Cache",
+    "description": "Creates version checkpoint for model state",
+    "target_engine": "cpe",
+    "target_method": "checkpoint"
+  },
+  {
+    "skill_number": 55,
+    "name": "diff_model_versions",
+    "category": "Provenance_Cache",
+    "description": "Diffs parameter state across two versions",
+    "target_engine": "cpe",
+    "target_method": "diff"
+  },
+  {
+    "skill_number": 56,
+    "name": "analyze_themes",
+    "category": "Thematic_STE",
+    "description": "Quantifies model domain composition in %",
+    "target_engine": "session",
+    "target_method": "analyze_themes"
+  },
+  {
+    "skill_number": 57,
+    "name": "get_theme_coverage",
+    "category": "Thematic_STE",
+    "description": "Returns thematic coverage breakdown",
+    "target_engine": "ste",
+    "target_method": "coverage"
+  },
+  {
+    "skill_number": 58,
+    "name": "detect_theme_gaps",
+    "category": "Thematic_STE",
+    "description": "Detects methodological or disciplinary gaps",
+    "target_engine": "ste",
+    "target_method": "detect_gaps"
+  },
+  {
+    "skill_number": 59,
+    "name": "suggest_related_themes",
+    "category": "Thematic_STE",
+    "description": "Suggests relevant interdisciplinary extensions",
+    "target_engine": "ste",
+    "target_method": "suggest"
+  },
+  {
+    "skill_number": 60,
+    "name": "explain_model_focus",
+    "category": "Thematic_STE",
+    "description": "Generates natural language focus summary",
+    "target_engine": "ste",
+    "target_method": "explain"
+  },
+  {
+    "skill_number": 61,
+    "name": "search_literature",
+    "category": "Literature_LKE",
+    "description": "Proposes relevant preprints and papers",
+    "target_engine": "session",
+    "target_method": "search_literature"
+  },
+  {
+    "skill_number": 62,
+    "name": "search_datasets",
+    "category": "Literature_LKE",
+    "description": "Finds public scientific benchmark datasets",
+    "target_engine": "lke",
+    "target_method": "search_datasets"
+  },
+  {
+    "skill_number": 63,
+    "name": "search_reference_code",
+    "category": "Literature_LKE",
+    "description": "Locates reference algorithms and repos",
+    "target_engine": "lke",
+    "target_method": "search_code"
+  },
+  {
+    "skill_number": 64,
+    "name": "rank_external_sources",
+    "category": "Literature_LKE",
+    "description": "Ranks sources by domain alignment & signal",
+    "target_engine": "lke",
+    "target_method": "rank"
+  },
+  {
+    "skill_number": 65,
+    "name": "propose_external_evidence",
+    "category": "Literature_LKE",
+    "description": "Emits justified external candidates",
+    "target_engine": "lke",
+    "target_method": "propose_resources"
+  },
+  {
+    "skill_number": 66,
+    "name": "link_evidence_to_gap",
+    "category": "Literature_LKE",
+    "description": "Associates external paper to model gap",
+    "target_engine": "lke",
+    "target_method": "link_to_gap"
+  },
+  {
+    "skill_number": 67,
+    "name": "detect_gaps",
+    "category": "Gaps_Assumptions",
+    "description": "Identifies model parameter & dependency gaps",
+    "target_engine": "autocomplete",
+    "target_method": "detect_gaps"
+  },
+  {
+    "skill_number": 68,
+    "name": "suggest_gap_closure",
+    "category": "Gaps_Assumptions",
+    "description": "Suggests rule-based gap connections",
+    "target_engine": "autocomplete",
+    "target_method": "suggest_connections"
+  },
+  {
+    "skill_number": 69,
+    "name": "list_assumptions",
+    "category": "Gaps_Assumptions",
+    "description": "Lists all active operational assumptions",
+    "target_engine": "aie",
+    "target_method": "list_assumptions"
+  },
+  {
+    "skill_number": 70,
+    "name": "check_assumption_integrity",
+    "category": "Gaps_Assumptions",
+    "description": "Audits state against declared premises",
+    "target_engine": "aie",
+    "target_method": "audit_state"
+  },
+  {
+    "skill_number": 71,
+    "name": "explain_decision",
+    "category": "Gaps_Assumptions",
+    "description": "Explains caching, pruning, or routing decisions",
+    "target_engine": "session",
+    "target_method": "explain_decision"
+  },
+  {
+    "skill_number": 72,
+    "name": "explain_result",
+    "category": "Gaps_Assumptions",
+    "description": "Explains result via inventory & verification",
+    "target_engine": "session",
+    "target_method": "explain_result"
+  },
+  {
+    "skill_number": 73,
+    "name": "audit_run",
+    "category": "Gaps_Assumptions",
+    "description": "Produces verifiable execution audit trail",
+    "target_engine": "session",
+    "target_method": "audit_run"
+  },
+  {
+    "skill_number": 74,
+    "name": "compare_runs",
+    "category": "Reporting",
+    "description": "Compares metrics across multiple session runs",
+    "target_engine": "session",
+    "target_method": "compare_runs"
+  },
+  {
+    "skill_number": 75,
+    "name": "generate_report",
+    "category": "Reporting",
+    "description": "Generates executive scientific markdown report",
+    "target_engine": "session",
+    "target_method": "generate_report"
+  },
+  {
+    "skill_number": 76,
+    "name": "export_graph",
+    "category": "Reporting",
+    "description": "Exports layer DAG representation",
+    "target_engine": "fln",
+    "target_method": "export_graph"
+  },
+  {
+    "skill_number": 77,
+    "name": "export_cache_manifest",
+    "category": "Reporting",
+    "description": "Exports reusable provenance catalog",
+    "target_engine": "mate",
+    "target_method": "export_manifest"
+  },
+  {
+    "skill_number": 78,
+    "name": "export_thematic_map",
+    "category": "Reporting",
+    "description": "Exports thematic composition summary",
+    "target_engine": "ste",
+    "target_method": "export_map"
+  },
+  {
+    "skill_number": 79,
+    "name": "export_skill_trace",
+    "category": "Reporting",
+    "description": "Exports audit trace of invoked skills",
+    "target_engine": "skills",
+    "target_method": "export_trace"
+  },
+  {
+    "skill_number": 80,
+    "name": "plan_computation",
+    "category": "Agent_Planning",
+    "description": "Generates optimal step plan under budget",
+    "target_engine": "session",
+    "target_method": "plan_computation"
+  },
+  {
+    "skill_number": 81,
+    "name": "select_next_action",
+    "category": "Agent_Planning",
+    "description": "Selects next best skill to advance goal",
+    "target_engine": "session",
+    "target_method": "select_next_action"
+  },
+  {
+    "skill_number": 82,
+    "name": "dry_run",
+    "category": "Agent_Planning",
+    "description": "Simulates calculation graph without heavy solvers",
+    "target_engine": "session",
+    "target_method": "dry_run"
+  },
+  {
+    "skill_number": 83,
+    "name": "validate_skill_call",
+    "category": "Agent_Planning",
+    "description": "Validates skill inputs before execution",
+    "target_engine": "skills",
+    "target_method": "validate"
+  },
+  {
+    "skill_number": 84,
+    "name": "batch_queries",
+    "category": "Agent_Planning",
+    "description": "Clusters and compresses similar queries",
+    "target_engine": "cqe",
+    "target_method": "compress_and_solve"
+  },
+  {
+    "skill_number": 85,
+    "name": "prioritize_queries",
+    "category": "Agent_Planning",
+    "description": "Sorts query queue by information value / cost",
+    "target_engine": "session",
+    "target_method": "prioritize"
+  }
+]

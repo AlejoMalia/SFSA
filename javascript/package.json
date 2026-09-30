@@ -1,11 +1,11 @@
 {
   "name": "sfsa",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Standard Framework for Scientific Advancement — A Universal Computational Framework",
   "main": "src/index.js",
   "type": "module",
   "scripts": {
-    "test": "node test/test_sfsa.js"
+    "test": "node test/test_sfsa.js && node test/test_new_engines.js && node test/test_extended_engines.js && node test/test_triad_pipelines.js && node test/test_meta_engines.js && node test/test_mate_ampliado.js && node test/test_skills_catalog.js && node test/test_robustness.js"
   },
   "keywords": [
     "science",
@@ -17,5 +17,6 @@
     "simulation"
   ],
   "author": "Alejo Malia",
-  "license": "CC-BY-4.0"
+  "license": "CC-BY-4.0",
+  "files": ["src"]
 }

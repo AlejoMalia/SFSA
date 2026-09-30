@@ -83,6 +83,11 @@ class FrameworkLayerNetwork:
         if target_layer_id not in self._layers:
             raise KeyError(f"Target layer '{target_layer_id}' is not registered.")
 
+        if source_layer_id == target_layer_id or source_layer_id in self._reachable_from(target_layer_id):
+            raise ValueError(
+                f"Cyclic dependency: connecting '{source_layer_id}' -> '{target_layer_id}' would create a cycle"
+            )
+
         dep = LayerDependency(
             source_layer_id=source_layer_id,
             target_layer_id=target_layer_id,
@@ -90,6 +95,48 @@ class FrameworkLayerNetwork:
             description=description,
         )
         self._dependencies.append(dep)
+
+    def _reachable_from(self, layer_id: str) -> Set[str]:
+        """All layers reachable by following dependency edges from layer_id (excluding itself unless in a cycle)."""
+        adj: Dict[str, List[str]] = {}
+        for d in self._dependencies:
+            adj.setdefault(d.source_layer_id, []).append(d.target_layer_id)
+        seen: Set[str] = set()
+        stack = list(adj.get(layer_id, []))
+        while stack:
+            node = stack.pop()
+            if node not in seen:
+                seen.add(node)
+                stack.extend(adj.get(node, []))
+        return seen
+
+    def disconnect_layers(self, source_layer_id: str, target_layer_id: str) -> int:
+        """Removes every dependency edge source -> target. Returns the number of edges removed."""
+        before = len(self._dependencies)
+        self._dependencies = [
+            d for d in self._dependencies
+            if not (d.source_layer_id == source_layer_id and d.target_layer_id == target_layer_id)
+        ]
+        return before - len(self._dependencies)
+
+    def get_downstream(self, layer_id: str) -> List[str]:
+        """Returns all layers reachable downstream from layer_id (excluding itself), in topological order."""
+        if layer_id not in self._layers:
+            raise KeyError(f"Layer '{layer_id}' does not exist.")
+        return self._topological_sort_from(layer_id)[1:]
+
+    def export_graph(self) -> Dict[str, Any]:
+        """Exports the DAG as plain data: nodes (with version) and edges."""
+        return {
+            "nodes": [
+                {"id": l.layer_id, "name": l.name, "version": l.version, "parameters": sorted(l.state.keys())}
+                for l in self._layers.values()
+            ],
+            "edges": [
+                {"source": d.source_layer_id, "target": d.target_layer_id, "description": d.description}
+                for d in self._dependencies
+            ],
+        }
 
     def _topological_sort_from(self, start_layer_id: str) -> List[str]:
         """Calculates topological execution order for layers downstream from start_layer_id."""
@@ -128,34 +175,42 @@ class FrameworkLayerNetwork:
         if layer_id not in self._layers:
             raise KeyError(f"Layer '{layer_id}' does not exist.")
 
+        # Resolve the cascade order first, then apply atomically: if any transformer fails,
+        # every affected layer is restored so the network never stays half-updated.
+        order = self._topological_sort_from(layer_id) if propagate else [layer_id]
+        snapshot = {
+            lid: (dict(self._layers[lid].state), self._layers[lid].version) for lid in order
+        }
+        notifications: List[str] = []
         layer = self._layers[layer_id]
-        layer.state.update(patch)
-        layer.version += 1
+        updated_versions: Dict[str, int] = {}
+        try:
+            layer.state.update(patch)
+            layer.version += 1
+            updated_versions[layer_id] = layer.version
+            notifications.append(layer_id)
 
-        updated_versions: Dict[str, int] = {layer_id: layer.version}
-        self._notify(layer_id, layer.state)
+            # Skip the start layer itself as it was already patched
+            for current_id in order[1:]:
+                incoming = [d for d in self._dependencies if d.target_layer_id == current_id]
+                target_layer = self._layers[current_id]
+                for dep in incoming:
+                    source_layer = self._layers[dep.source_layer_id]
+                    delta = dep.transformer(source_layer.state, target_layer.state)
+                    if delta:
+                        target_layer.state.update(delta)
+                target_layer.version += 1
+                updated_versions[current_id] = target_layer.version
+                notifications.append(current_id)
+        except Exception:
+            for lid, (state, version) in snapshot.items():
+                self._layers[lid].state.clear()
+                self._layers[lid].state.update(state)
+                self._layers[lid].version = version
+            raise
 
-        if not propagate:
-            return updated_versions
-
-        # Determine downstream cascade order
-        order = self._topological_sort_from(layer_id)
-        # Skip the start layer itself as it was already patched
-        for current_id in order[1:]:
-            # Find all incoming dependencies for current_id
-            incoming = [d for d in self._dependencies if d.target_layer_id == current_id]
-            target_layer = self._layers[current_id]
-
-            for dep in incoming:
-                source_layer = self._layers[dep.source_layer_id]
-                delta = dep.transformer(source_layer.state, target_layer.state)
-                if delta:
-                    target_layer.state.update(delta)
-
-            target_layer.version += 1
-            updated_versions[current_id] = target_layer.version
-            self._notify(current_id, target_layer.state)
-
+        for lid in notifications:
+            self._notify(lid, self._layers[lid].state)
         return updated_versions
 
     def subscribe(self, callback: Callable[[str, Dict[str, Any]], None]) -> None:

@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "sfsa"
-version = "0.1.0"
+version = "0.2.0"
 description = "Standard Framework for Scientific Advancement — A Universal Computational Framework"
 readme = "README.md"
 authors = [{ name = "Alejo Malia" }]
@@ -30,3 +30,9 @@ dev = [
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 pythonpath = ["."]
+
+[tool.setuptools.packages.find]
+include = ["sfsa*"]
+
+[tool.setuptools.package-data]
+sfsa = ["catalog.json"]

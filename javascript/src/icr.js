@@ -49,14 +49,17 @@ export class ICREngine {
     analyticalShortcut = null,
     shortcutValidityCondition = null,
     estimatedDenseOps = 1000,
+    zeroInputResult = null,
   }) {
+    estimatedDenseOps = Math.max(Math.trunc(estimatedDenseOps), 1);
     const applied = [];
     const t0 = performance.now();
 
     // PASS 1: Trivial / Near-Zero Pruning
     const values = Object.values(inputParams);
     const allNearZero = values.length > 0 && values.every((v) => typeof v === 'number' && Math.abs(v) < 1e-15);
-    if (allNearZero) {
+    // Only prune when the caller declares the known answer for all-zero input: f(0) is not 0 in general.
+    if (allNearZero && zeroInputResult !== null) {
       applied.push("TrivialZeroPruning: All parameters near zero");
       const profile = new ReductionProfile({
         initialOperationsEstimated: estimatedDenseOps,
@@ -68,7 +71,7 @@ export class ICREngine {
       });
       this._totalOperationsAvoided += profile.operationsEliminated;
       this._history.push(profile);
-      return { result: 0.0, profile };
+      return { result: zeroInputResult, profile };
     }
 
     // PASS 2: Analytical Closed-Form Substitution
@@ -78,9 +81,20 @@ export class ICREngine {
           ? shortcutValidityCondition(inputParams)
           : true;
 
+        let shortcutOk = false;
+        let result = null;
         if (canUse) {
+          try {
+            result = analyticalShortcut(inputParams);
+            shortcutOk = !(typeof result === 'number' && !Number.isFinite(result));
+          } catch {
+            shortcutOk = false;
+          }
+          if (!shortcutOk) applied.push("ShortcutRejected: closed form failed or returned non-finite; using exact solver");
+        }
+
+        if (canUse && shortcutOk) {
           applied.push("ClosedFormSubstitution: Executed O(1) analytical shortcut");
-          const result = analyticalShortcut(inputParams);
           const executedOps = 5;
           const profile = new ReductionProfile({
             initialOperationsEstimated: estimatedDenseOps,
@@ -114,6 +128,10 @@ export class ICREngine {
 
   get totalOperationsAvoided() {
     return this._totalOperationsAvoided;
+  }
+
+  set totalOperationsAvoided(value) {
+    this._totalOperationsAvoided = value;
   }
 
   get reductionHistory() {

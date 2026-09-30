@@ -67,6 +67,7 @@ export class Pathway {
 export class ParetoPathEngine {
   constructor() {
     this._actions = new Map();
+    this.maxExpansions = 200000;
   }
 
   registerStep(step) {
@@ -110,10 +111,25 @@ export class ParetoPathEngine {
       return true;
     };
 
+    // Steps may repeat (heat, heat, heat); bounded by dominance pruning per state and a cap on expansions.
     const queue = [[{ ...initialState }, []]];
+    const bestSeen = new Map();
+    let expansions = 0;
+    let head = 0;
 
-    while (queue.length > 0) {
-      const [currState, path] = queue.shift();
+    while (head < queue.length) {
+      const [currState, path] = queue[head++];
+
+      const obj = [
+        path.reduce((a, s) => a + s.cost, 0),
+        path.reduce((a, s) => a + s.duration, 0),
+        path.reduce((a, s) => a * s.feasibility, 1.0),
+      ];
+      const stateKey = JSON.stringify(Object.keys(currState).sort().map((k) => [k, Math.round(currState[k] * 1e9) / 1e9]));
+      if (!bestSeen.has(stateKey)) bestSeen.set(stateKey, []);
+      const seen = bestSeen.get(stateKey);
+      if (seen.some(([c, d, f]) => c <= obj[0] && d <= obj[1] && f >= obj[2])) continue;
+      seen.push(obj);
 
       if (isGoalSatisfied(currState)) {
         const totalCost = path.reduce((acc, s) => acc + s.cost, 0);
@@ -138,8 +154,9 @@ export class ParetoPathEngine {
       }
 
       for (const act of this._actions.values()) {
-        if (path.length > 0 && path[path.length - 1].stepId === act.stepId) {
-          continue;
+        expansions += 1;
+        if (expansions > this.maxExpansions) {
+          return this.extractParetoFrontier(completedPathways);
         }
 
         const newState = { ...currState };

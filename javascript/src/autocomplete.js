@@ -55,7 +55,7 @@ export class AutocompleteEngine {
     this._rules.set(ruleName, resolver);
   }
 
-  detectGaps(currentState, requiredSchema) {
+  detectGaps(currentState, requiredSchema = {}) {
     const gaps = [];
     for (const [key, requirement] of Object.entries(requiredSchema)) {
       if (currentState[key] === undefined || currentState[key] === null) {
