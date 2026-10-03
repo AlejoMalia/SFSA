@@ -243,7 +243,16 @@ SFSA ships as a Claude Code plugin: the library, the operating instructions and 
 /plugin install sfsa@sfsa-marketplace
 ```
 
-After installing the plugin, type `/sfsa` followed by the task (the plugin ships a `/sfsa` command; if another plugin defines the same name, use `/sfsa:sfsa`). No clone needed. Or just describe the scientific task (audit units, check an identity, speed up a costly model, choose the next experiment, explain why two solvers disagree) or invoke it explicitly with `/sfsa:sfsa`. Claude loads the SFSA instructions, writes a short script, runs it through the bundled `bin/sfsa-python` (Python 3.9+, no packages) and reports the result with its method, uncertainty and limits.
+Two ways to use it:
+
+- **Plugin** (above): the skill is invoked as `/sfsa:sfsa` followed by the task (plugin skills carry the plugin name; the short `/sfsa` is not available from a plugin), or just describe the scientific task and Claude loads it on its own.
+- **Plain `/sfsa`**, one command, no manual clone (needs `git` and `python3`):
+  ```
+  curl -fsSL https://raw.githubusercontent.com/AlejoMalia/SFSA/main/scripts/install.sh | bash
+  ```
+  It installs the same skill, with the library bundled, into `~/.claude/skills/sfsa`; open a new Claude Code session and type `/sfsa audit the units of E = 1/2 m v^2`.
+
+Claude loads the SFSA instructions, writes a short script, runs it through the bundled `bin/sfsa-python` (Python 3.9+, no packages) and reports the result with its method, uncertainty and limits.
 
 What this is: operating instructions plus tools, loaded when needed. It is not training, and Claude does not "remember" SFSA between sessions; the skill loads again each time. The model of the system (the physics) always comes from the user: SFSA accelerates, audits and documents the computation around it. Details: [`claude-plugin/README.md`](claude-plugin/README.md). The bundled copy of `python/sfsa` is regenerated with `python scripts/sync_plugin.py`, and a test fails if it drifts.
 

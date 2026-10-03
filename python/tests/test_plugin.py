@@ -75,7 +75,18 @@ def test_standalone_install_gives_a_self_contained_skill(tmp_path):
     assert out.returncode == 0 and "OK" in out.stdout
 
 
-def test_slash_command_exists_so_plain_sfsa_works_after_plugin_install():
-    cmd = (PLUGIN / "commands" / "sfsa.md").read_text(encoding="utf-8")
-    head = cmd.split("---")[1]
-    assert "description:" in head and "$ARGUMENTS" in cmd and "`sfsa` skill" in cmd
+def test_one_line_installer_gives_a_working_plain_sfsa_skill(tmp_path):
+    target = tmp_path / "skills" / "sfsa"
+    env = {**__import__("os").environ, "SFSA_LOCAL": str(ROOT)}
+    r = subprocess.run(["bash", str(ROOT / "scripts" / "install.sh"), str(target)], capture_output=True, text=True, check=False, env=env)
+    assert r.returncode == 0, r.stderr
+    assert (target / "SKILL.md").is_file() and (target / "lib" / "sfsa" / "__init__.py").is_file()
+
+
+def test_bundled_library_is_not_git_ignored():
+    """A past .gitignore rule (`lib/`) silently dropped the bundled library from the published plugin."""
+    import shutil
+    if shutil.which("git") is None or not (ROOT / ".git").exists():
+        return
+    r = subprocess.run(["git", "check-ignore", "-q", str(PLUGIN / "lib" / "sfsa" / "__init__.py")], cwd=ROOT, check=False)
+    assert r.returncode == 1, "claude-plugin/lib is ignored by .gitignore: the published plugin would have no library"

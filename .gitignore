@@ -43,3 +43,6 @@ yarn-error.log*
 .idea/
 *.swp
 *.swo
+
+# the Claude plugin ships a bundled copy of the library: it must be tracked
+!claude-plugin/lib/
