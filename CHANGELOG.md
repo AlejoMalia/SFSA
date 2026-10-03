@@ -8,7 +8,11 @@
 - **ASG** `filter_grid` ignored the uncertainty estimator. Estimators (per call or at construction) now drive the skip decision; under a budget the points are chosen greedily by utility instead of first-come; a budget of 0 selects nothing; pending responses are NaN, not a fake 0.
 - **DIE** classified a numerical discrepancy (Euler vs a finer solution) as a modeling assumption. New cause `NUMERICAL_DISCRETIZATION`, `same_model` / `discretization_error` hints, `richardson()` and `analyze_refinement()`. Default behavior without hints is unchanged.
 
+### Added
+- Claude Code plugin (`claude-plugin/`, marketplace manifest in `.claude-plugin/`): bundled library, operating-instructions skill, tested recipes, `sfsa-python` / `sfsa-info`, and `scripts/sync_plugin.py` (a test fails if the bundled copy drifts).
+
 ### Tests
+- `python/tests/test_plugin.py`.
 - `python/tests/test_audit_fixes.py` and `javascript/test/test_audit_fixes.js`.
 
 ## 0.2.0

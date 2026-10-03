@@ -1,0 +1,10 @@
+{
+  "name": "sfsa",
+  "description": "SFSA (Standard Framework for Scientific Advancement) as Claude's analysis engine: units audit, equivalence checks, cached and multi-fidelity computation, adaptive sampling, sensitivity, discrepancy diagnosis and reproducible reports. Bundled, no install step.",
+  "version": "0.2.0",
+  "author": { "name": "Alejo Malia" },
+  "homepage": "https://github.com/AlejoMalia/SFSA",
+  "repository": "https://github.com/AlejoMalia/SFSA",
+  "license": "CC-BY-4.0",
+  "keywords": ["science", "simulation", "units", "uncertainty", "reproducibility", "sfsa"]
+}

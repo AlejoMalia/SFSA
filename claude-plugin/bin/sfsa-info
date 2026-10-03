@@ -1,0 +1,47 @@
+#!/usr/bin/env python3
+"""Look up SFSA without reading source: sfsa-info skills [category] | describe NAME | engines | version | selftest."""
+import json
+import os
+import sys
+
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "lib"))
+import sfsa  # noqa: E402
+from sfsa.skills import REQUIRED_ARGS, SKILL_DEFINITIONS  # noqa: E402
+
+
+def main(argv):
+    cmd = argv[1] if len(argv) > 1 else "help"
+    if cmd == "version":
+        print(sfsa.__doc__.split("Version:")[-1].strip().split()[0] if "Version:" in (sfsa.__doc__ or "") else "unknown")
+    elif cmd == "skills":
+        cat = argv[2] if len(argv) > 2 else None
+        for s in SKILL_DEFINITIONS:
+            if cat is None or s.category.lower() == cat.lower():
+                print(f"{s.skill_number:>2}  {s.category:<24} {s.name:<28} {s.description}")
+    elif cmd == "describe" and len(argv) > 2:
+        meta = next((s for s in SKILL_DEFINITIONS if s.name == argv[2] or str(s.skill_number) == argv[2]), None)
+        if meta is None:
+            print(f"Unknown skill {argv[2]!r}. Run: sfsa-info skills")
+            return 1
+        print(json.dumps({"number": meta.skill_number, "name": meta.name, "category": meta.category,
+                          "description": meta.description, "required_args": REQUIRED_ARGS.get(meta.name, []),
+                          "call": f'session.execute_skill("{meta.name}", ...)'}, indent=2))
+    elif cmd == "engines":
+        session = sfsa.SFSASession(name="info")
+        for name, obj in sorted(vars(session).items()):
+            if not name.startswith("_") and hasattr(obj, "__class__") and obj.__class__.__module__.startswith("sfsa."):
+                doc = (obj.__class__.__doc__ or "").strip().splitlines()
+                print(f"session.{name:<12} {obj.__class__.__name__:<36} {doc[0] if doc else ''}")
+    elif cmd == "selftest":
+        s = sfsa.SFSASession(name="selftest")
+        r = s.compute(task_id="x", inventory={"a": 2.0}, solver=lambda i: i["a"] ** 2)
+        assert r.value == 4.0 and s.execute_skill("generate_report").active_engines_count > 0
+        print("SFSA bundled library OK")
+    else:
+        print(__doc__)
+        return 0 if cmd == "help" else 1
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main(sys.argv))

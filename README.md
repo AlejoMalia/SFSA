@@ -234,6 +234,21 @@ Empirical results measuring real multi-engine pipelines working in concert:
 
 ---
 
+## Use SFSA with Claude (plugin)
+
+SFSA ships as a Claude Code plugin: the library, the operating instructions and tested recipes are bundled, so nobody has to clone the repository, run `pip install` or tell Claude to "read SFSA".
+
+```
+/plugin marketplace add AlejoMalia/SFSA
+/plugin install sfsa@sfsa-marketplace
+```
+
+After installing the plugin, type `/sfsa` followed by the task (the plugin ships a `/sfsa` command; if another plugin defines the same name, use `/sfsa:sfsa`). No clone needed. Or just describe the scientific task (audit units, check an identity, speed up a costly model, choose the next experiment, explain why two solvers disagree) or invoke it explicitly with `/sfsa:sfsa`. Claude loads the SFSA instructions, writes a short script, runs it through the bundled `bin/sfsa-python` (Python 3.9+, no packages) and reports the result with its method, uncertainty and limits.
+
+What this is: operating instructions plus tools, loaded when needed. It is not training, and Claude does not "remember" SFSA between sessions; the skill loads again each time. The model of the system (the physics) always comes from the user: SFSA accelerates, audits and documents the computation around it. Details: [`claude-plugin/README.md`](claude-plugin/README.md). The bundled copy of `python/sfsa` is regenerated with `python scripts/sync_plugin.py`, and a test fails if it drifts.
+
+---
+
 ## Quickstart Guide
 
 ### Python Integration

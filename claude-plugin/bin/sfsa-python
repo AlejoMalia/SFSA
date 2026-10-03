@@ -1,0 +1,6 @@
+#!/usr/bin/env bash
+# Runs python3 with the bundled SFSA library on the path. No pip install, no clone needed.
+# Usage: sfsa-python script.py [args]   |   sfsa-python -c "import sfsa; print(sfsa.__file__)"
+ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+export PYTHONPATH="$ROOT/lib${PYTHONPATH:+:$PYTHONPATH}"
+exec "${SFSA_PYTHON:-python3}" "$@"
