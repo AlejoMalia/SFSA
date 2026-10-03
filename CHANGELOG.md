@@ -1,5 +1,16 @@
 # Changelog
 
+## Unreleased
+
+### Fixed (external audit; Python and JavaScript)
+- **UDE** returned any unknown or compound unit (`1/year`, `m/s`, `month`) as dimensionless without warning, so a mismatch could pass an audit. It now parses unit expressions (`*`, `/`, `^`, parentheses, SI prefixes, rational exponents), raises `UnknownUnitError` / `UnitSyntaxError` for anything it cannot resolve (`m2` is an error, not 2 m), reports unknown units as incompatible in `verify_compatibility`, and converts absolute temperatures (degC, degF). Legacy lowercase aliases (`kpa`, `mw`) still resolve.
+- **SYE** rewrote text with regular expressions: `x * 0.5` became `0.5`, and identities such as `log(v1/v0) + log(v2/v1) = log(v2/v0)` were not recognised. It now works on a restricted syntax tree (no evaluation of arbitrary code), reports poles using the whole denominator and the domain condition of each rewrite, and decides equivalence with `check_equivalence()`: a sympy proof when sympy is installed (Python, optional) and a seeded numerical check otherwise, stating the method and that a numerical agreement is evidence, not proof.
+- **ASG** `filter_grid` ignored the uncertainty estimator. Estimators (per call or at construction) now drive the skip decision; under a budget the points are chosen greedily by utility instead of first-come; a budget of 0 selects nothing; pending responses are NaN, not a fake 0.
+- **DIE** classified a numerical discrepancy (Euler vs a finer solution) as a modeling assumption. New cause `NUMERICAL_DISCRETIZATION`, `same_model` / `discretization_error` hints, `richardson()` and `analyze_refinement()`. Default behavior without hints is unchanged.
+
+### Tests
+- `python/tests/test_audit_fixes.py` and `javascript/test/test_audit_fixes.js`.
+
 ## 0.2.0
 
 ### Fixed

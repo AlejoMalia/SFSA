@@ -44,10 +44,20 @@ class AdaptiveSamplingEngine:
     Integrates with MATE cache and FLN layer dependencies.
     """
 
-    def __init__(self, min_euclidean_distance: float = 0.05, uncertainty_weight: float = 0.6) -> None:
+    def __init__(
+        self,
+        min_euclidean_distance: float = 0.05,
+        uncertainty_weight: float = 0.6,
+        uncertainty_estimator: Optional[Callable[[Dict[str, float]], float]] = None,
+        gradient_estimator: Optional[Callable[[Dict[str, float]], float]] = None,
+    ) -> None:
         self.min_euclidean_distance = min_euclidean_distance
         self.uncertainty_weight = uncertainty_weight
+        # Default estimators used by evaluate_candidate / filter_grid when none is passed per call.
+        self.uncertainty_estimator = uncertainty_estimator
+        self.gradient_estimator = gradient_estimator
         self.evaluated_points: List[Dict[str, float]] = []
+        # NaN marks a point that was selected but whose response has not been recorded yet.
         self.point_values: List[float] = []
 
     def record_evaluation(self, point: Dict[str, float], value: float) -> None:
@@ -71,7 +81,11 @@ class AdaptiveSamplingEngine:
     ) -> SampleCandidate:
         """
         Assesses whether a candidate point merits computational evaluation.
+
+        ``uncertainty_estimator`` / ``gradient_estimator`` default to those given at construction.
         """
+        uncertainty_estimator = uncertainty_estimator or self.uncertainty_estimator
+        gradient_estimator = gradient_estimator or self.gradient_estimator
         if not self.evaluated_points:
             return SampleCandidate(
                 point=candidate_point,
@@ -111,16 +125,39 @@ class AdaptiveSamplingEngine:
         self,
         candidate_grid: List[Dict[str, float]],
         max_budget: Optional[int] = None,
+        uncertainty_estimator: Optional[Callable[[Dict[str, float]], float]] = None,
+        gradient_estimator: Optional[Callable[[Dict[str, float]], float]] = None,
     ) -> List[Dict[str, float]]:
         """
         Filters a dense candidate grid down to only the most informative points.
+
+        The uncertainty and gradient estimators (per call, or the ones given at construction) drive both the
+        skip decision and, under a budget, the ranking: without a budget the grid is scanned in order and every
+        non-redundant point is kept; with ``max_budget`` the points are chosen greedily by acquisition utility
+        (re-evaluated after every pick, so the next pick accounts for the ones already selected). A budget of 0
+        selects nothing; a negative budget is an error. Selected points are registered with a NaN response until
+        :meth:`record_evaluation` / the caller supplies the real value.
         """
+        if max_budget is not None and max_budget < 0:
+            raise ValueError("max_budget must be >= 0")
         selected: List[Dict[str, float]] = []
-        for cand in candidate_grid:
-            assessment = self.evaluate_candidate(cand)
-            if not assessment.skip_recommended:
-                selected.append(cand)
-                self.record_evaluation(cand, 0.0) # Mark as sampled in draft
-            if max_budget and len(selected) >= max_budget:
+        if max_budget == 0:
+            return selected
+        if max_budget is None:
+            for cand in candidate_grid:
+                assessment = self.evaluate_candidate(cand, uncertainty_estimator, gradient_estimator)
+                if not assessment.skip_recommended:
+                    selected.append(cand)
+                    self.record_evaluation(cand, math.nan)
+            return selected
+        remaining = list(candidate_grid)
+        while remaining and len(selected) < max_budget:
+            scored = [(self.evaluate_candidate(c, uncertainty_estimator, gradient_estimator), i)
+                      for i, c in enumerate(remaining)]
+            viable = [(a, i) for a, i in scored if not a.skip_recommended]
+            if not viable:
                 break
+            best, idx = max(viable, key=lambda t: (t[0].information_gain, -t[1]))   # ties: earliest in the grid
+            selected.append(remaining.pop(idx))
+            self.record_evaluation(best.point, math.nan)
         return selected

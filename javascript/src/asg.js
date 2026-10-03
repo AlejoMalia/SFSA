@@ -9,10 +9,14 @@
  */
 
 export class AdaptiveSamplingEngine {
-  constructor(minEuclideanDistance = 0.05, uncertaintyWeight = 0.6) {
+  constructor(minEuclideanDistance = 0.05, uncertaintyWeight = 0.6, { uncertaintyEstimator = null, gradientEstimator = null } = {}) {
     this.minEuclideanDistance = minEuclideanDistance;
     this.uncertaintyWeight = uncertaintyWeight;
+    // Default estimators used by evaluateCandidate / filterGrid when none is passed per call.
+    this.uncertaintyEstimator = uncertaintyEstimator;
+    this.gradientEstimator = gradientEstimator;
     this.evaluatedPoints = [];
+    // NaN marks a point that was selected but whose response has not been recorded yet.
     this.pointValues = [];
   }
 
@@ -30,6 +34,8 @@ export class AdaptiveSamplingEngine {
   }
 
   evaluateCandidate(candidatePoint, uncertaintyEstimator = null, gradientEstimator = null) {
+    uncertaintyEstimator = uncertaintyEstimator || this.uncertaintyEstimator;
+    gradientEstimator = gradientEstimator || this.gradientEstimator;
     if (this.evaluatedPoints.length === 0) {
       return {
         point: candidatePoint,
@@ -60,15 +66,38 @@ export class AdaptiveSamplingEngine {
     };
   }
 
-  filterGrid(candidateGrid, maxBudget = null) {
+  /**
+   * Filters a dense candidate grid down to the most informative points. The uncertainty/gradient estimators
+   * (per call, or those given at construction) drive both the skip decision and, under a budget, the ranking:
+   * without a budget the grid is scanned in order and every non-redundant point is kept; with maxBudget the points
+   * are chosen greedily by acquisition utility, re-evaluated after every pick. Budget 0 selects nothing; a
+   * negative budget throws. Selected points are registered with a NaN response until the real value is recorded.
+   */
+  filterGrid(candidateGrid, maxBudget = null, uncertaintyEstimator = null, gradientEstimator = null) {
+    if (maxBudget !== null && maxBudget < 0) throw new Error('maxBudget must be >= 0');
     const selected = [];
-    for (const cand of candidateGrid) {
-      const a = this.evaluateCandidate(cand);
-      if (!a.skipRecommended) {
-        selected.push(cand);
-        this.recordEvaluation(cand, 0.0); // mark as sampled in draft
+    if (maxBudget === 0) return selected;
+    if (maxBudget === null) {
+      for (const cand of candidateGrid) {
+        const a = this.evaluateCandidate(cand, uncertaintyEstimator, gradientEstimator);
+        if (!a.skipRecommended) {
+          selected.push(cand);
+          this.recordEvaluation(cand, NaN);
+        }
       }
-      if (maxBudget && selected.length >= maxBudget) break;
+      return selected;
+    }
+    const remaining = [...candidateGrid];
+    while (remaining.length && selected.length < maxBudget) {
+      let best = null;
+      let bestIdx = -1;
+      remaining.forEach((c, i) => {
+        const a = this.evaluateCandidate(c, uncertaintyEstimator, gradientEstimator);
+        if (!a.skipRecommended && (best === null || a.informationGain > best.informationGain)) { best = a; bestIdx = i; }
+      });
+      if (best === null) break;
+      selected.push(remaining.splice(bestIdx, 1)[0]);
+      this.recordEvaluation(best.point, NaN);
     }
     return selected;
   }

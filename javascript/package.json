@@ -5,7 +5,7 @@
   "main": "src/index.js",
   "type": "module",
   "scripts": {
-    "test": "node test/test_sfsa.js && node test/test_new_engines.js && node test/test_extended_engines.js && node test/test_triad_pipelines.js && node test/test_meta_engines.js && node test/test_mate_ampliado.js && node test/test_skills_catalog.js && node test/test_robustness.js"
+    "test": "node test/test_sfsa.js && node test/test_new_engines.js && node test/test_extended_engines.js && node test/test_triad_pipelines.js && node test/test_meta_engines.js && node test/test_mate_ampliado.js && node test/test_skills_catalog.js && node test/test_robustness.js && node test/test_audit_fixes.js"
   },
   "keywords": [
     "science",
