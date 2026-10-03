@@ -11,6 +11,9 @@
 ### Added
 - Claude Code plugin (`claude-plugin/`, marketplace manifest in `.claude-plugin/`; invoked as `/sfsa:sfsa`) and a one-line installer for plain `/sfsa` (`scripts/install.sh`): bundled library, operating-instructions skill, tested recipes, `sfsa-python` / `sfsa-info`, and `scripts/sync_plugin.py` (a test fails if the bundled copy drifts).
 
+### Documentation
+- README: new top-level section "SFSA is a #ClaudeAI plugin" (install both ways from the terminal, what to ask, how it works, limits); test badges updated to the real counts (188 Python, 43 JavaScript).
+
 ### Tests
 - `python/tests/test_plugin.py`.
 - `python/tests/test_audit_fixes.py` and `javascript/test/test_audit_fixes.js`.

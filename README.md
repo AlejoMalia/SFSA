@@ -7,9 +7,10 @@
 
 [![License: CC BY 4.0](https://img.shields.io/badge/License-CC_BY_4.0-lightgrey.svg)](https://creativecommons.org/licenses/by/4.0/)
 [![Version](https://img.shields.io/badge/version-0.2.0-blue.svg)]()
-[![Tests](https://img.shields.io/badge/tests-137%20passed%20(100%25)-brightgreen.svg)]()
-[![Python Tests](https://img.shields.io/badge/pytest-95%2F95%20passed-brightgreen.svg)]()
-[![JavaScript Tests](https://img.shields.io/badge/node%20test-42%2F42%20passed-brightgreen.svg)]()
+[![Claude plugin](https://img.shields.io/badge/Claude-plugin%20%26%20skill-d97757.svg)](#sfsa-is-a-claudeai-plugin)
+[![Tests](https://img.shields.io/badge/tests-231%20passed%20(100%25)-brightgreen.svg)]()
+[![Python Tests](https://img.shields.io/badge/pytest-188%2F188%20passed-brightgreen.svg)]()
+[![JavaScript Tests](https://img.shields.io/badge/node%20test-43%2F43%20passed-brightgreen.svg)]()
 [![Engines](https://img.shields.io/badge/engines-39%20scientific%20engines-blue.svg)]()
 [![Skills](https://img.shields.io/badge/skills-85%20executable%20skills-purple.svg)]()
 [![Compute Reduction](https://img.shields.io/badge/compute%20reduction-45%25%20--%2098%25%20(by%20scenario)-orange.svg)]()
@@ -18,6 +19,52 @@
 > **Typical savings when reuse/bounds apply:** ~45–98 % wall-clock (scenario models). **Isolated one-shot runs:** ~0 %.
 
 SFSA does not unilaterally complete 100% of a scientific investigation on its own; rather, it empowers the researcher to reach the solution, decisive data point, or methodological trajectory required to close it much faster—substantially reducing time lost in search, trial-and-error, and redundant recalculation.
+
+---
+
+## SFSA is a #ClaudeAI plugin
+
+SFSA now ships as a **Claude Code plugin and skill**: the library, the operating instructions and eight tested recipes are bundled, so a researcher does not clone the repository, run `pip install` or tell Claude to "read SFSA". Install it once, then ask Claude for scientific computation and it uses SFSA as its engine: **real code, real output, honest limits**.
+
+### Install (once, in your terminal, not inside Claude)
+
+**Option A: plugin** (updates from GitHub)
+```bash
+claude plugin marketplace add AlejoMalia/SFSA
+claude plugin install sfsa@sfsa-marketplace
+```
+Open a new Claude Code session and type `/sfsa:sfsa` followed by your task, or just describe the task and the skill triggers on its own.
+
+**Option B: standalone skill** (the short `/sfsa`; needs `git` and `python3`)
+```bash
+curl -fsSL https://raw.githubusercontent.com/AlejoMalia/SFSA/main/scripts/install.sh | bash
+```
+Open a new Claude Code session and type `/sfsa` followed by your task. (You can read the script first: [`scripts/install.sh`](scripts/install.sh).)
+
+Requirements: [Claude Code](https://claude.com/claude-code) and Python 3.9+. No Python packages.
+
+### What to ask
+```
+/sfsa:sfsa audit the units of E = 1/2 m v^2 and confirm that kg*(m/s)^2 is a joule
+/sfsa:sfsa check whether log(v1/v0) + log(v2/v1) equals log(v2/v0)
+/sfsa:sfsa run my expensive model twice with the same inputs without recomputing
+/sfsa:sfsa which of these parameters matter, and where should I run the next experiment?
+/sfsa:sfsa my two solvers disagree by 4 %: why?
+```
+
+### How it works
+1. Claude loads the SFSA operating instructions (rules, workflow, which engine answers which question, reporting template).
+2. It frames your task, audits units, picks engines and writes a short Python script.
+3. It runs the script with the bundled `bin/sfsa-python` (the library is inside the plugin) and reads the real output.
+4. It reports result, method, uncertainty, measured savings and what the analysis does **not** cover. For example, an identity is labelled *proved* (`symbolic`) or only *evidenced* (`numeric`), and a failure is shown as a failure.
+
+### What it is, and what it is not
+- It is operating instructions plus tools, loaded when needed. It is **not** training: Claude does not "remember" SFSA between sessions; the skill loads again each time.
+- SFSA contains **no domain physics**. The model of your system comes from you (or your code); SFSA accelerates, audits and documents the computation around it.
+- Approximate reuse, surrogates, pruned parameters and early stopping are opt-in and must be declared in the report.
+- Unit checks verify dimensions, not that a formula is the right one.
+
+Update: `claude plugin marketplace update sfsa-marketplace`. Remove: `claude plugin uninstall sfsa@sfsa-marketplace` (plugin) or delete `~/.claude/skills/sfsa` (standalone). Details: [`claude-plugin/README.md`](claude-plugin/README.md). The bundled library is regenerated with `python scripts/sync_plugin.py`, and a test fails if it drifts.
 
 ---
 
@@ -234,30 +281,6 @@ Empirical results measuring real multi-engine pipelines working in concert:
 
 ---
 
-## Use SFSA with Claude (plugin)
-
-SFSA ships as a Claude Code plugin: the library, the operating instructions and tested recipes are bundled, so nobody has to clone the repository, run `pip install` or tell Claude to "read SFSA".
-
-```
-/plugin marketplace add AlejoMalia/SFSA
-/plugin install sfsa@sfsa-marketplace
-```
-
-Two ways to use it:
-
-- **Plugin** (above): the skill is invoked as `/sfsa:sfsa` followed by the task (plugin skills carry the plugin name; the short `/sfsa` is not available from a plugin), or just describe the scientific task and Claude loads it on its own.
-- **Plain `/sfsa`**, one command, no manual clone (needs `git` and `python3`):
-  ```
-  curl -fsSL https://raw.githubusercontent.com/AlejoMalia/SFSA/main/scripts/install.sh | bash
-  ```
-  It installs the same skill, with the library bundled, into `~/.claude/skills/sfsa`; open a new Claude Code session and type `/sfsa audit the units of E = 1/2 m v^2`.
-
-Claude loads the SFSA instructions, writes a short script, runs it through the bundled `bin/sfsa-python` (Python 3.9+, no packages) and reports the result with its method, uncertainty and limits.
-
-What this is: operating instructions plus tools, loaded when needed. It is not training, and Claude does not "remember" SFSA between sessions; the skill loads again each time. The model of the system (the physics) always comes from the user: SFSA accelerates, audits and documents the computation around it. Details: [`claude-plugin/README.md`](claude-plugin/README.md). The bundled copy of `python/sfsa` is regenerated with `python scripts/sync_plugin.py`, and a test fails if it drifts.
-
----
-
 ## Quickstart Guide
 
 ### Python Integration
@@ -359,13 +382,13 @@ Both implementations ship automated suites covering all **39 engines** and **85 
 ### Running Python Tests
 ```bash
 cd python && python3 -m pytest -q
-# 95 passed
+# 188 passed
 ```
 
 ### Running JavaScript Tests (Node.js)
 ```bash
 cd javascript && npm test          # runs every suite file
-node --test javascript/test/*.js   # or via the Node test runner (42 passed)
+node --test javascript/test/*.js   # or via the Node test runner (43 passed)
 ```
 
 ### Notes on cross-language parity
